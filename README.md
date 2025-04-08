@@ -15,3 +15,4 @@ Run Application.java as SpringBoot application
 3. The question & answers are retrieved from a file which are loaded into memory during application startup. Its flexible
     to store the questions in permanent db
 4. The service QuestionHandlerResolver determines if the request if for basic or arithmetic question.
+5. Used profile as local which is set as active
