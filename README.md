@@ -1,6 +1,10 @@
 # RoboBob Application
 
-The application is built using springboot using contract first approach using OpenAPI. Uses gradle as build tool.
+The application is built using 
+1. Java 17
+2. Gradle build tool
+3. Springboot
+4. OpenAPI
 
 # How to build
 use './gradlew clean build' to build the project. It auto generates the classes from OpenAPI spec. 
