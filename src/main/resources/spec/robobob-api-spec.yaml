@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: Question API
+  version: 1.0.0
+  description: API for children's mathematics Robot App handling questions and arithmetic
+
+paths:
+  /api/questions:
+    post:
+      tags:
+        - Question
+      summary: Ask a question or submit an arithmetic expression
+      description: |
+        Accepts either basic predefined questions about RoboBob or arithmetic expressions.
+        Returns appropriate answers or prompts for different questions.
+      operationId: askQuestion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+            examples:
+              basicQuestion:
+                value:
+                  question: "What is your name"
+              arithmeticExpression:
+                value:
+                  question: "2+2"
+              unknownQuestion:
+                value:
+                  question: "Where do you see yourself in next 50 years?"
+      responses:
+        '200':
+          description: Successful response with answer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerResponse'
+              examples:
+                basicAnswer:
+                  value:
+                    answer: "RoboBob"
+                arithmeticAnswer:
+                  value:
+                    answer: "4"
+                defaultAnswer:
+                  value:
+                    answer: "I don't understand your question"
+        '400':
+          description: Invalid request format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                timestamp: "2023-08-20T12:34:56.789Z"
+                status: 400
+                error: "Bad Request"
+                message: "Validation failed"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    QuestionRequest:
+      type: object
+      required:
+        - question
+      properties:
+        question:
+          type: string
+          minLength: 1
+          example: "What is your name"
+          description: The question or arithmetic expression to process
+
+    AnswerResponse:
+      type: object
+      properties:
+        answer:
+          type: string
+          description: The response to the question/expression
+      required:
+        - answer
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - timestamp
+        - status
+        - error
+        - message

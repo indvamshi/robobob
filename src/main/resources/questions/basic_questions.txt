@@ -1,0 +1,3 @@
+What is your name=RoboBob
+What is your age=45
+Where are you from=Didcot

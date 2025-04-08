@@ -1,0 +1,18 @@
+
+spring:
+  application:
+    name: robobob
+  profiles:
+    active: local
+
+robobob:
+  basic-questions-file: src/main/resources/questions/basic_questions.txt
+
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    root: INFO
+    com:
+      maths:
+        challenge: INFO
+
