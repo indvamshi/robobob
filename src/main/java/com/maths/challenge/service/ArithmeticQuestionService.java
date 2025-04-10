@@ -1,5 +1,7 @@
 package com.maths.challenge.service;
 
+import com.maths.challenge.exception.ArithmeticEvaluationException;
+import com.maths.challenge.exception.ArithmeticSyntaxException;
 import com.maths.challenge.generated.model.AnswerResponse;
 import com.maths.challenge.generated.model.QuestionRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -9,50 +11,71 @@ import org.graalvm.polyglot.PolyglotException;
 import org.graalvm.polyglot.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service implementation for handling arithmetic question requests.
+ * It uses GraalVM's JavaScript context to evaluate arithmetic expressions.
+ */
 @Slf4j
 @Service("ArithmeticService")
 public class ArithmeticQuestionService implements QuestionHandler {
 
+    /**
+     * The language identifier for the JavaScript context used by GraalVM.
+     */
+    public static final String JS_LANGUAGE = "js";
+
+    /**
+     * Handles the given arithmetic question request by evaluating the expression.
+     *
+     * @param questionRequest The question request containing the arithmetic expression.
+     * @return An AnswerResponse object containing the result of the evaluation.
+     */
     @Override
     public AnswerResponse handleQuestion(QuestionRequest questionRequest) {
-        return new AnswerResponse(evaluate(questionRequest.getQuestion()).toString());
+        try {
+            Number evaluate = evaluate(questionRequest.getQuestion());
+            return new AnswerResponse(evaluate.toString());
+        } catch (ArithmeticException exp) {
+            log.error("Arithmetic evaluation failed: {}", exp.getMessage());
+            throw exp;
+        }
     }
 
     /**
-     * Evaluates expression using graalvm by creating a context for JS language.
+     * Evaluates the given arithmetic expression using GraalVM's JavaScript context.
      *
-     * @param expression
-     * @return a numerical value
-     * @throws IllegalArgumentException
+     * @param expression The arithmetic expression to evaluate.
+     * @return The result of the evaluation as a BigDecimal.
+     * @throws ArithmeticException If an error occurs during evaluation.
      */
-    private Number evaluate(String expression) throws IllegalArgumentException {
-
-        try (Context context = Context.newBuilder("js")
-                .allowAllAccess(false)             // Disallow all host access
-                .allowHostAccess(HostAccess.NONE)  // Don't expose Java types
+    private Number evaluate(String expression) throws ArithmeticException {
+        try (Context context = Context.newBuilder(JS_LANGUAGE)
+                .allowAllAccess(false)
+                .allowHostAccess(HostAccess.NONE)
                 .build()) {
 
-            // Evaluate the expression
-            Value result = context.eval("js", expression);
+            Value result = context.eval(JS_LANGUAGE, expression);
 
-            // Ensure it's a number
             if (!result.fitsInDouble()) {
-                throw new IllegalArgumentException("Expression did not evaluate to a numeric result.");
+                throw new ArithmeticEvaluationException("Expression did not evaluate to a numeric result.");
             }
 
-            double value = result.asDouble();
+            double doubleValue = result.asDouble();
 
-            if (Double.isInfinite(value) || Double.isNaN(value)) {
-                throw new IllegalArgumentException("Expression evaluated to an invalid number (Infinity or NaN).");
+            if (Double.isInfinite(doubleValue) || Double.isNaN(doubleValue)) {
+                throw new ArithmeticEvaluationException("Expression evaluated to an invalid number (Infinity or NaN).");
             }
 
             // checks if value is a whole number
-            if (value == Math.floor(value)) {
-                return (int) value;
+            if (doubleValue == Math.floor(doubleValue)) {
+                return (int) doubleValue;
             }
-            return value;
-        } catch (PolyglotException e) {
-            throw new IllegalArgumentException("Invalid expression: " + expression, e);
+
+            return doubleValue;
+        } catch (PolyglotException exp) {
+            log.error("Invalid expression", exp);
+            throw new ArithmeticSyntaxException("Invalid expression: " + expression);
         }
     }
+
 }

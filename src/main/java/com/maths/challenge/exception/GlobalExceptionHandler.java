@@ -28,12 +28,22 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * GlobalExceptionHandler handles all application exceptions with status codes and custom error messages
+ * Global exception handler for REST API endpoints.
+ * This class handles various exceptions and provides consistent error responses.
  */
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+    /**
+     * Handles validation errors when request parameters are invalid.
+     *
+     * @param ex      The MethodArgumentNotValidException.
+     * @param headers The HttpHeaders.
+     * @param status  The HttpStatusCode.
+     * @param request The WebRequest.
+     * @return ResponseEntity containing the error response.
+     */
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers,
@@ -42,17 +52,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         List<String> errors = ex.getBindingResult().getFieldErrors()
                 .stream()
                 .map(FieldError::getDefaultMessage)
-                .collect(Collectors.toList());
+                .toList();
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 "Validation failed",
                 errors
         );
-
+        log.warn("Validation failure: {}", errors);
         return buildResponseEntity(errorResponse);
     }
 
+    /**
+     * Handles BadRequestException, indicating an invalid request.
+     *
+     * @param ex The BadRequestException.
+     * @return ResponseEntity containing the error response.
+     */
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
@@ -62,44 +78,51 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "Question is invalid",
                 Collections.singletonList(ex.getMessage())
         );
+        log.warn("Bad request: {}", ex.getMessage());
         return buildResponseEntity(errorResponse);
     }
 
-    // Handle arithmetic calculation errors
-    @ExceptionHandler(InvalidParameterException.class)
+    /**
+     * Handles QuestionNotFoundException, indicating that the requested question was not found.
+     *
+     * @param ex The QuestionNotFoundException.
+     * @return ResponseEntity containing the error response.
+     */
+    @ExceptionHandler(QuestionNotFoundException.class)
     protected ResponseEntity<Object> handleInvalidParameterException(RuntimeException ex) {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.NOT_FOUND,
                 "Not found",
                 Collections.singletonList(ex.getMessage())
         );
+        log.warn("Question not found: {}", ex.getMessage());
         return buildResponseEntity(errorResponse);
     }
 
-    // Handle bad arithmetic expressions
-    @ExceptionHandler(IllegalArgumentException.class)
-    protected ResponseEntity<Object> handleIllegalArgumentException(RuntimeException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
-                "Bad arithmetic expression.",
-                Collections.singletonList(ex.getMessage())
-        );
-        return buildResponseEntity(errorResponse);
-    }
-
-    // Handle arithmetic calculation errors
-    @ExceptionHandler({ArithmeticException.class, ScriptException.class})
+    /**
+     * Handles ArithmeticException and ScriptException, indicating errors in arithmetic calculations or scripting.
+     *
+     * @param ex The ArithmeticException or ScriptException.
+     * @return ResponseEntity containing the error response.
+     */
+    @ExceptionHandler({ArithmeticEvaluationException.class, ArithmeticSyntaxException.class})
     protected ResponseEntity<Object> handleArithmeticErrors(RuntimeException ex) {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.UNPROCESSABLE_ENTITY,
                 "Invalid arithmetic expression",
                 Collections.singletonList(ex.getMessage())
         );
+        log.warn("Arithmetic error: {}", ex.getMessage());
         return buildResponseEntity(errorResponse);
     }
 
-
-    // Handle other exceptions
+    /**
+     * Handles all other exceptions, providing a generic error response.
+     *
+     * @param ex      The Exception.
+     * @param request The WebRequest.
+     * @return ResponseEntity containing the generic error response.
+     */
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
         log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
@@ -113,12 +136,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseEntity(errorResponse);
     }
 
+    /**
+     * Builds a ResponseEntity from an ErrorResponse object.
+     *
+     * @param errorResponse The ErrorResponse object.
+     * @return ResponseEntity containing the error response.
+     */
     private ResponseEntity<Object> buildResponseEntity(ErrorResponse errorResponse) {
         return ResponseEntity
                 .status(errorResponse.getStatus())
                 .body(errorResponse);
     }
 
+    /**
+     * Represents the error response structure.
+     */
     @Getter
     @AllArgsConstructor
     public static class ErrorResponse {
@@ -128,6 +160,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         private final String error;
         private final List<String> messages;
 
+        /**
+         * Constructor for ErrorResponse with HttpStatus.
+         *
+         * @param status   The HttpStatus.
+         * @param error    The error message.
+         * @param messages The list of error messages.
+         */
         public ErrorResponse(HttpStatus status, String error, List<String> messages) {
             this.status = status.value();
             this.error = error;

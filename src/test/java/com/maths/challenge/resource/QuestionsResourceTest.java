@@ -4,7 +4,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.maths.challenge.component.QuestionHandlerResovler;
+import com.maths.challenge.component.QuestionHandlerResolver;
 import com.maths.challenge.generated.model.AnswerResponse;
 import com.maths.challenge.generated.model.QuestionRequest;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ public class QuestionsResourceTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private QuestionHandlerResovler questionResolver;
+    private QuestionHandlerResolver questionResolver;
 
     @Test
     public void testAskQuestionEndpoint_basicQuestion() throws Exception {

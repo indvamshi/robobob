@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.maths.challenge.exception.ArithmeticEvaluationException;
+import com.maths.challenge.exception.ArithmeticSyntaxException;
 import com.maths.challenge.generated.model.AnswerResponse;
 import com.maths.challenge.generated.model.QuestionRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,27 +54,44 @@ public class ArithmeticQuestionServiceTest {
     }
 
     @Nested
-    @DisplayName("Evaluation Exception Tests")
-    class EvaluationErrorTests {
+    @DisplayName("Evaluation Syntax Exception Tests")
+    class EvaluationSyntaxExpressionTests {
 
-        static Stream<String> badExpressions() {
+        static Stream<String> syntaxExpressions() {
             return Stream.of(
-                    "5 / 0",
-                    " 0 / 0",
                     "2 + * 5",
                     "(3 + 2",
-                    "",
-                    "    ",
                     "2 + (3 * )",
                     "2 + three",
                     "abc123"
             );
         }
 
-        @ParameterizedTest(name = "Expression: \"{0}\" should throw IllegalArgumentException")
+        @ParameterizedTest(name = "Expression: \"{0}\" should throw ArithmeticSyntaxException")
+        @MethodSource("syntaxExpressions")
+        void testHandleQuestion_withMalformedExpressions(String expression) {
+            assertThrows(ArithmeticSyntaxException.class, () ->
+                    service.handleQuestion(new QuestionRequest(expression)));
+        }
+    }
+
+    @Nested
+    @DisplayName("Evaluation Bad Expression Tests")
+    class EvaluationBadExpressionTests {
+
+        static Stream<String> badExpressions() {
+            return Stream.of(
+                    "5 / 0",
+                    " 0 / 0",
+                    "",
+                    "    "
+            );
+        }
+
+        @ParameterizedTest(name = "Expression: \"{0}\" should throw ArithmeticEvaluationException")
         @MethodSource("badExpressions")
         void testHandleQuestion_withMalformedExpressions(String expression) {
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(ArithmeticEvaluationException.class, () ->
                     service.handleQuestion(new QuestionRequest(expression)));
         }
     }

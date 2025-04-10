@@ -24,11 +24,11 @@ public class QuestionHandlerResolverTest {
     @Mock
     private QuestionHandler arithmeticQuestionHandler;
 
-    private QuestionHandlerResovler questionHandlerResovler;
+    private QuestionHandlerResolver questionHandlerResolver;
 
     @BeforeEach
     void setUp() {
-        questionHandlerResovler = new QuestionHandlerResovler(basicQuestionHandler, arithmeticQuestionHandler);
+        questionHandlerResolver = new QuestionHandlerResolver(basicQuestionHandler, arithmeticQuestionHandler);
     }
 
     @Test
@@ -38,7 +38,7 @@ public class QuestionHandlerResolverTest {
 
         when(arithmeticQuestionHandler.handleQuestion(request)).thenReturn(expectedResponse);
 
-        AnswerResponse actualResponse = questionHandlerResovler.handle(request);
+        AnswerResponse actualResponse = questionHandlerResolver.handle(request);
 
         assertEquals(expectedResponse, actualResponse);
         verify(arithmeticQuestionHandler).handleQuestion(request);
@@ -52,7 +52,7 @@ public class QuestionHandlerResolverTest {
 
         when(basicQuestionHandler.handleQuestion(request)).thenReturn(expectedResponse);
 
-        AnswerResponse actualResponse = questionHandlerResovler.handle(request);
+        AnswerResponse actualResponse = questionHandlerResolver.handle(request);
 
         assertEquals(expectedResponse, actualResponse);
         verify(basicQuestionHandler).handleQuestion(request);

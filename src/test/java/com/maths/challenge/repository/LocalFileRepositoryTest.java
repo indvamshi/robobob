@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.maths.challenge.exception.QuestionNotFoundException;
 import com.maths.challenge.generated.model.AnswerResponse;
 import com.maths.challenge.generated.model.QuestionRequest;
 import org.junit.jupiter.api.AfterAll;
@@ -18,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.InvalidParameterException;
 import java.util.List;
 
 @SpringBootTest
@@ -71,13 +71,13 @@ public class LocalFileRepositoryTest {
 
     @Test
     void testGetAnswer_returnsNullForUnknownQuestion() {
-        assertThrows(InvalidParameterException.class, () ->
+        assertThrows(QuestionNotFoundException.class, () ->
                 validRepo.getAnswer(new QuestionRequest("Unknown question")));
     }
 
     @Test
     void testGetAnswer_shouldNotThrowExceptionWhenFileIsMissing() {
-        assertThrows(InvalidParameterException.class, () ->
+        assertThrows(QuestionNotFoundException.class, () ->
                 invalidRepo.getAnswer(new QuestionRequest("Unknown question")));
     }
 
