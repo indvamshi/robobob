@@ -18,25 +18,30 @@ Run Application.java as SpringBoot application
 http://localhost:8080/api/questions
 method: POST
 
-```json
 request:
+```json
     {
     "question": "What is your name "
     }  
+```
 response:
+```json
     {
     "answer": "RoboBob"
     }
-
+``` 
 request:
+```json
     {
     "question": "2*3"
     }
+```
 response:
+```json
     {
     "answer": "6"
     }
-    
+```    
 Statuscode :  
 200 - valid response
 400 - Validation errors
